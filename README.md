@@ -478,10 +478,10 @@ func isActive(now, start, stop time.Time) bool {
 
 [`time.Duration`]: https://golang.org/pkg/time/#Duration
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 func poll(delay int) {
@@ -493,7 +493,7 @@ func poll(delay int) {
 poll(10) // 是几秒钟还是几毫秒？
 ```
 
-</td><td>
+**Good**
 
 ```go
 func poll(delay time.Duration) {
@@ -505,8 +505,8 @@ func poll(delay time.Duration) {
 poll(10*time.Second)
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 回到第一个例子，在一个时间瞬间加上 24 小时，我们用于添加时间的方法取决于意图。如果我们想要下一个日历日 (当前天的下一天) 的同一个时间点，我们应该使用 [`Time.AddDate`]。但是，如果我们想保证某一时刻比前一时刻晚 24 小时，我们应该使用 [`Time.Add`]。
 
@@ -539,10 +539,10 @@ maybeNewDay := t.Add(24 * time.Hour)
 
 例如，由于 `encoding/json` 不支持 `time.Duration`，因此该单位包含在字段的名称中。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 // {"interval": 2}
@@ -551,7 +551,7 @@ type Config struct {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 // {"intervalMillis": 2000}
@@ -560,8 +560,8 @@ type Config struct {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 当在这些交互中不能使用 `time.Time` 时，除非达成一致，否则使用 `string` 和 [RFC 3339] 中定义的格式时间戳。默认情况下，[`Time.UnmarshalText`] 使用此格式，并可通过 [`time.RFC3339`] 在 `Time.Format` 和 `time.Parse` 中使用。
 
@@ -593,12 +593,12 @@ type Config struct {
 [`errors.Is`]: https://golang.org/pkg/errors/#Is
 [`errors.As`]: https://golang.org/pkg/errors/#As
 
-| 错误匹配？| 错误消息 | 指导                           |
-|-----------------|---------------|-------------------------------------|
-| No              | static        | [`errors.New`]                      |
-| No              | dynamic       | [`fmt.Errorf`]                      |
-| Yes             | static        | top-level `var` with [`errors.New`] |
-| Yes             | dynamic       | custom `error` type                 |
+| 错误匹配？ | 错误消息    | 指导                                  |
+|-------|---------|-------------------------------------|
+| No    | static  | [`errors.New`]                      |
+| No    | dynamic | [`fmt.Errorf`]                      |
+| Yes   | static  | top-level `var` with [`errors.New`] |
+| Yes   | dynamic | custom `error` type                 |
 
 [`errors.New`]: https://golang.org/pkg/errors/#New
 [`fmt.Errorf`]: https://golang.org/pkg/fmt/#Errorf
@@ -730,10 +730,10 @@ There are three main options for propagating errors if a call fails:
 
 在为返回的错误添加上下文时，通过避免使用"failed to"之类的短语来保持上下文简洁，当错误通过堆栈向上渗透时，它会一层一层被堆积起来：
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 s, err := store.New()
@@ -747,7 +747,7 @@ if err != nil {
 failed to x: failed to y: failed to create new store: the error
 ```
 
-</td><td>
+**Good**
 
 ```go
 s, err := store.New()
@@ -762,8 +762,8 @@ x: y: new store: the error
 ```
 
 
-</td></tr>
-</tbody></table>
+
+
 
 然而，一旦错误被发送到另一个系统，应该清楚消息是一个错误（例如`err` 标签或日志中的"Failed"前缀）。
 
@@ -821,16 +821,16 @@ func (e *resolveError) Error() string {
 
   [类型断言]: https://golang.org/ref/spec#Type_assertions
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 t := i.(string)
 ```
 
-</td><td>
+**Good**
 
 ```go
 t, ok := i.(string)
@@ -839,8 +839,8 @@ if !ok {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 <!-- TODO: There are a few situations where the single assignment form is
 fine. -->
@@ -851,10 +851,10 @@ fine. -->
 
 [级联失败]: https://en.wikipedia.org/wiki/Cascading_failure
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 func run(args []string) {
@@ -869,7 +869,7 @@ func main() {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 func run(args []string) error {
@@ -888,8 +888,8 @@ func main() {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 panic/recover 不是错误处理策略。仅当发生不可恢复的事情（例如：nil 引用）时，程序才必须 panic。程序初始化是一个例外：程序启动时应使程序中止的不良情况可能会引起 panic。
 
@@ -899,10 +899,10 @@ var _statusTemplate = template.Must(template.New("name").Parse("_statusHTML"))
 
 即使在测试代码中，也优先使用`t.Fatal`或者`t.FailNow`而不是 panic 来确保失败被标记。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 // func TestFoo(t *testing.T)
@@ -913,7 +913,7 @@ if err != nil {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 // func TestFoo(t *testing.T)
@@ -924,8 +924,8 @@ if err != nil {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 <!-- TODO: Explain how to use _test packages. -->
 
@@ -938,10 +938,10 @@ if err != nil {
 [go.uber.org/atomic]: https://godoc.org/go.uber.org/atomic
 [sync/atomic]: https://golang.org/pkg/sync/atomic/
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 type foo struct {
@@ -961,7 +961,7 @@ func (f *foo) isRunning() bool {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 type foo struct {
@@ -981,18 +981,18 @@ func (f *foo) isRunning() bool {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 避免可变全局变量
 
 使用选择依赖注入方式避免改变全局变量。
 既适用于函数指针又适用于其他值类型
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 // sign.go
@@ -1015,7 +1015,7 @@ func TestSign(t *testing.T) {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 // sign.go
@@ -1045,8 +1045,8 @@ func TestSigner(t *testing.T) {
 ```
 
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 避免在公共结构中嵌入类型
 
@@ -1067,10 +1067,10 @@ func (l *AbstractList) Remove(e Entity) {
 }
 ```
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 // ConcreteList 是一个实体列表。
@@ -1079,7 +1079,7 @@ type ConcreteList struct {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 // ConcreteList 是一个实体列表。
@@ -1096,8 +1096,8 @@ func (l *ConcreteList) Remove(e Entity) {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 Go 允许 [类型嵌入](https://golang.org/doc/effective_go.html#embedding) 作为继承和组合之间的折衷。外部类型获取嵌入类型的方法的隐式副本。默认情况下，这些方法委托给嵌入实例的同一方法。
 
@@ -1109,10 +1109,10 @@ Go 允许 [类型嵌入](https://golang.org/doc/effective_go.html#embedding) 作
 
 即使嵌入兼容的抽象列表 *interface*，而不是结构体，这将为开发人员提供更大的灵活性来改变未来，但仍然泄露了具体列表使用抽象实现的细节。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 // AbstractList 是各种实体列表的通用实现。
@@ -1126,7 +1126,7 @@ type ConcreteList struct {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 // ConcreteList 是一个实体列表。
@@ -1143,8 +1143,8 @@ func (l *ConcreteList) Remove(e Entity) {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 无论是使用嵌入结构还是嵌入接口，都会限制类型的演化。
 
@@ -1167,10 +1167,10 @@ Go [语言规范] 概述了几个内置的，
 [语言规范]: https://golang.org/ref/spec
 [预先声明的标识符]: https://golang.org/ref/spec#Predeclared_identifiers
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 var error string
@@ -1201,7 +1201,7 @@ func (f Foo) String() string {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 var errorMessage string
@@ -1230,8 +1230,8 @@ func (f Foo) String() string {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 注意，编译器在使用预先分隔的标识符时不会生成错误，
 但是诸如`go vet`之类的工具会正确地指出这些和其他情况下的隐式问题。
@@ -1250,10 +1250,10 @@ func (f Foo) String() string {
 或者作为`main()`本身的一部分写入。特别是，打算由其他程序使用的库应该特别注意完全确定性，
 而不是执行“init magic”
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 type Foo struct {
@@ -1283,7 +1283,7 @@ func init() {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 var _defaultFoo = Foo{
@@ -1315,8 +1315,8 @@ func loadConfig() Config {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 考虑到上述情况，在某些情况下，`init()`可能更可取或是必要的，可能包括：
 
@@ -1332,10 +1332,10 @@ func loadConfig() Config {
 
 在尽可能的情况下，在初始化要追加的切片时为`make()`提供一个容量值。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 for n := 0; n < b.N; n++ {
@@ -1350,7 +1350,7 @@ for n := 0; n < b.N; n++ {
 BenchmarkBad-4    100000000    2.48s
 ```
 
-</td><td>
+**Good**
 
 ```go
 for n := 0; n < b.N; n++ {
@@ -1365,8 +1365,8 @@ for n := 0; n < b.N; n++ {
 BenchmarkGood-4   100000000    0.21s
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 主函数退出方式 (Exit)
 
@@ -1377,10 +1377,10 @@ Go 程序使用 [`os.Exit`] 或者 [`log.Fatal*`] 立即退出 (使用`panic`不
 
 **仅在`main()`** 中调用其中一个 `os.Exit` 或者 `log.Fatal*`。所有其他函数应将错误返回到信号失败中。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 func main() {
@@ -1400,7 +1400,7 @@ func readFile(path string) string {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 func main() {
@@ -1423,8 +1423,8 @@ func readFile(path string) (string, error) {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 原则上：退出的具有多种功能的程序存在一些问题：
 
@@ -1436,10 +1436,10 @@ func readFile(path string) (string, error) {
 如果可能的话，你的`main（）`函数中 **最多一次** 调用 `os.Exit`或者`log.Fatal`。如果有多个错误场景停止程序执行，请将该逻辑放在单独的函数下并从中返回错误。
 这会缩短 `main()` 函数，并将所有关键业务逻辑放入一个单独的、可测试的函数中。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 package main
@@ -1464,7 +1464,7 @@ func main() {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 package main
@@ -1492,8 +1492,8 @@ func run() error {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ## 性能
 
@@ -1503,10 +1503,10 @@ func run() error {
 
 将原语转换为字符串或从字符串转换时，`strconv`速度比`fmt`快。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 for i := 0; i < b.N; i++ {
@@ -1518,7 +1518,7 @@ for i := 0; i < b.N; i++ {
 BenchmarkFmtSprint-4    143 ns/op    2 allocs/op
 ```
 
-</td><td>
+**Good**
 
 ```go
 for i := 0; i < b.N; i++ {
@@ -1531,8 +1531,8 @@ BenchmarkStrconv-4    64.2 ns/op    1 allocs/op
 ```
 
 
-</td></tr>
-</tbody></table>
+
+
 
 
 
@@ -1540,10 +1540,10 @@ BenchmarkStrconv-4    64.2 ns/op    1 allocs/op
 
 不要反复从固定字符串创建字节 slice。相反，请执行一次转换并捕获结果。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 for i := 0; i < b.N; i++ {
@@ -1555,7 +1555,7 @@ for i := 0; i < b.N; i++ {
 BenchmarkBad-4   50000000   22.2 ns/op
 ```
 
-</td><td>
+**Good**
 
 ```go
 data := []byte("Hello world")
@@ -1568,8 +1568,8 @@ for i := 0; i < b.N; i++ {
 BenchmarkGood-4  500000000   3.25 ns/op
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 指定容器容量
 
@@ -1589,10 +1589,10 @@ make(map[T1]T2, hint)
 注意，与 slices 不同。map capacity 提示并不保证完全的抢占式分配，而是用于估计所需的 hashmap bucket 的数量。
 因此，在将元素添加到 map 时，甚至在指定 map 容量时，仍可能发生分配。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 m := make(map[string]os.FileInfo)
@@ -1605,7 +1605,7 @@ for _, f := range files {
 
 `m` 是在没有大小提示的情况下创建的； 在运行时可能会有更多分配。
 
-</td><td>
+**Good**
 
 ```go
 
@@ -1620,8 +1620,8 @@ for _, f := range files {
 `m` 是有大小提示创建的；在运行时可能会有更少的分配。
 
 
-</td></tr>
-</tbody></table>
+
+
 
 #### 指定切片容量
 
@@ -1634,10 +1634,10 @@ make([]T, length, capacity)
 与 maps 不同，slice capacity 不是一个提示：编译器将为提供给`make()`的 slice 的容量分配足够的内存，
 这意味着后续的 append()`操作将导致零分配（直到 slice 的长度与容量匹配，在此之后，任何 append 都可能调整大小以容纳其他元素）。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 for n := 0; n < b.N; n++ {
@@ -1652,7 +1652,7 @@ for n := 0; n < b.N; n++ {
 BenchmarkBad-4    100000000    2.48s
 ```
 
-</td><td>
+**Good**
 
 ```go
 for n := 0; n < b.N; n++ {
@@ -1667,8 +1667,8 @@ for n := 0; n < b.N; n++ {
 BenchmarkGood-4   100000000    0.21s
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ## 规范
 ### 避免过长的行
@@ -1695,17 +1695,17 @@ BenchmarkGood-4   100000000    0.21s
 
 Go 语言支持将相似的声明放在一个组内。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 import "a"
 import "b"
 ```
 
-</td><td>
+**Good**
 
 ```go
 import (
@@ -1714,15 +1714,15 @@ import (
 )
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 这同样适用于常量、变量和类型声明：
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 
@@ -1736,7 +1736,7 @@ type Area float64
 type Volume float64
 ```
 
-</td><td>
+**Good**
 
 ```go
 const (
@@ -1755,15 +1755,15 @@ type (
 )
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 仅将相关的声明放在一组。不要将不相关的声明放在一组。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 type Operation int
@@ -1776,7 +1776,7 @@ const (
 )
 ```
 
-</td><td>
+**Good**
 
 ```go
 type Operation int
@@ -1790,15 +1790,15 @@ const (
 const EnvVar = "MY_ENV"
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 分组使用的位置没有限制，例如：你可以在函数内部使用它们：
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 func f() string {
@@ -1810,7 +1810,7 @@ func f() string {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 func f() string {
@@ -1824,15 +1824,15 @@ func f() string {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 例外：如果变量声明与其他变量相邻，则应将变量声明（尤其是函数内部的声明）分组在一起。对一起声明的变量执行此操作，即使它们不相关。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 func (c *client) request() {
@@ -1844,7 +1844,7 @@ func (c *client) request() {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 func (c *client) request() {
@@ -1859,8 +1859,8 @@ func (c *client) request() {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### import 分组
 
@@ -1871,10 +1871,10 @@ func (c *client) request() {
 
 默认情况下，这是 goimports 应用的分组。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 import (
@@ -1885,7 +1885,7 @@ import (
 )
 ```
 
-</td><td>
+**Good**
 
 ```go
 import (
@@ -1897,8 +1897,8 @@ import (
 )
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 包名
 
@@ -1936,10 +1936,10 @@ import (
 
 在所有其他情况下，除非导入之间有直接冲突，否则应避免导入别名。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 import (
@@ -1950,7 +1950,7 @@ import (
 )
 ```
 
-</td><td>
+**Good**
 
 ```go
 import (
@@ -1962,8 +1962,8 @@ import (
 )
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 函数分组与顺序
 
@@ -1976,10 +1976,10 @@ import (
 
 由于函数是按接收者分组的，因此普通工具函数应在文件末尾出现。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 func (s *something) Cost() {
@@ -1997,7 +1997,7 @@ func newSomething() *something {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 type something struct{ ... }
@@ -2015,17 +2015,17 @@ func (s *something) Stop() {...}
 func calcCost(n []int) int {...}
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 减少嵌套
 
 代码应通过尽可能先处理错误情况/特殊情况并尽早返回或继续循环来减少嵌套。减少嵌套多个级别的代码的代码量。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 for _, v := range data {
@@ -2042,7 +2042,7 @@ for _, v := range data {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 for _, v := range data {
@@ -2059,17 +2059,17 @@ for _, v := range data {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 不必要的 else
 
 如果在 if 的两个分支中都设置了变量，则可以将其替换为单个 if。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 var a int
@@ -2080,7 +2080,7 @@ if b {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 a := 10
@@ -2089,17 +2089,17 @@ if b {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 顶层变量声明
 
 在顶层，使用标准`var`关键字。请勿指定类型，除非它与表达式的类型不同。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 var _s string = F()
@@ -2107,7 +2107,7 @@ var _s string = F()
 func F() string { return "A" }
 ```
 
-</td><td>
+**Good**
 
 ```go
 var _s = F()
@@ -2117,8 +2117,8 @@ var _s = F()
 func F() string { return "A" }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 如果表达式的类型与所需的类型不完全匹配，请指定类型。
 
@@ -2141,10 +2141,10 @@ var _e error = F()
 
 基本依据：顶级变量和常量具有包范围作用域。使用通用名称可能很容易在其他文件中意外使用错误的值。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 // foo.go
@@ -2166,7 +2166,7 @@ func Bar() {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 // foo.go
@@ -2177,8 +2177,8 @@ const (
 )
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 **Exception**:未导出的错误值可以使用不带下划线的前缀 `err`。 参见[错误命名](#错误命名)。
 
@@ -2186,10 +2186,10 @@ const (
 
 嵌入式类型（例如 mutex）应位于结构体内的字段列表的顶部，并且必须有一个空行将嵌入式字段与常规字段分隔开。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 type Client struct {
@@ -2198,7 +2198,7 @@ type Client struct {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 type Client struct {
@@ -2208,8 +2208,8 @@ type Client struct {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 内嵌应该提供切实的好处，比如以语义上合适的方式添加或增强功能。
 它应该在对用户没有任何不利影响的情况下使用。（另请参见：[避免在公共结构中嵌入类型]）。
@@ -2237,10 +2237,10 @@ type Client struct {
 "是否所有这些导出的内部方法/字段都将直接添加到外部类型"
 如果答案是`some`或`no`，不要嵌入内部类型 - 而是使用字段。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 type A struct {
@@ -2272,7 +2272,7 @@ type Client struct {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 type countingWriteCloser struct {
@@ -2309,8 +2309,8 @@ type Client struct {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 使用字段名初始化结构体
 
@@ -2318,16 +2318,16 @@ type Client struct {
 
 [`go vet`]: https://golang.org/cmd/vet/
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 k := User{"John", "Doe", true}
 ```
 
-</td><td>
+**Good**
 
 ```go
 k := User{
@@ -2337,8 +2337,8 @@ k := User{
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 例外：如果有 3 个或更少的字段，则可以在测试表中省略字段名称。
 
@@ -2356,32 +2356,32 @@ tests := []struct{
 
 如果将变量明确设置为某个值，则应使用短变量声明形式 (`:=`)。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 var s = "foo"
 ```
 
-</td><td>
+**Good**
 
 ```go
 s := "foo"
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 但是，在某些情况下，`var` 使用关键字时默认值会更清晰。例如，[声明空切片]。
 
 [声明空切片]: https://github.com/golang/go/wiki/CodeReviewComments#declaring-empty-slices
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 func f(list []int) {
@@ -2394,7 +2394,7 @@ func f(list []int) {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 func f(list []int) {
@@ -2407,8 +2407,8 @@ func f(list []int) {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### nil 是一个有效的 slice
 
@@ -2416,10 +2416,10 @@ func f(list []int) {
 
 - 您不应明确返回长度为零的切片。应该返回`nil` 来代替。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 if x == "" {
@@ -2427,7 +2427,7 @@ if x == "" {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 if x == "" {
@@ -2435,15 +2435,15 @@ if x == "" {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 - 要检查切片是否为空，请始终使用`len(s) == 0`。而非 `nil`。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 func isEmpty(s []string) bool {
@@ -2451,7 +2451,7 @@ func isEmpty(s []string) bool {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 func isEmpty(s []string) bool {
@@ -2459,15 +2459,15 @@ func isEmpty(s []string) bool {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 - 零值切片（用`var`声明的切片）可立即使用，无需调用`make()`创建。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 nums := []int{}
@@ -2482,7 +2482,7 @@ if add2 {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 var nums []int
@@ -2496,8 +2496,8 @@ if add2 {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 记住，虽然 nil 切片是有效的切片，但它不等于长度为 0 的切片（一个为 nil，另一个不是），并且在不同的情况下（例如序列化），这两个切片的处理方式可能不同。
 
@@ -2505,10 +2505,10 @@ if add2 {
 
 如果有可能，尽量缩小变量作用范围。除非它与 [减少嵌套](#减少嵌套)的规则冲突。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 err := ioutil.WriteFile(name, data, 0644)
@@ -2517,7 +2517,7 @@ if err != nil {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 if err := ioutil.WriteFile(name, data, 0644); err != nil {
@@ -2525,15 +2525,15 @@ if err := ioutil.WriteFile(name, data, 0644); err != nil {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 如果需要在 if 之外使用函数调用的结果，则不应尝试缩小范围。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 if data, err := ioutil.ReadFile(name); err == nil {
@@ -2549,7 +2549,7 @@ if data, err := ioutil.ReadFile(name); err == nil {
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 data, err := ioutil.ReadFile(name)
@@ -2565,17 +2565,17 @@ fmt.Println(cfg)
 return nil
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 避免参数语义不明确 (Avoid Naked Parameters)
 
 函数调用中的`意义不明确的参数`可能会损害可读性。当参数名称的含义不明显时，请为参数添加 C 样式注释 (`/* ... */`)
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 // func printInfo(name string, isLocal, done bool)
@@ -2583,7 +2583,7 @@ return nil
 printInfo("foo", true, true)
 ```
 
-</td><td>
+**Good**
 
 ```go
 // func printInfo(name string, isLocal, done bool)
@@ -2591,8 +2591,8 @@ printInfo("foo", true, true)
 printInfo("foo", true /* isLocal */, true /* done */)
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 对于上面的示例代码，还有一种更好的处理方式是将上面的 `bool` 类型换成自定义类型。将来，该参数可以支持不仅仅局限于两个状态（true/false）。
 
@@ -2621,23 +2621,23 @@ Go 支持使用 [原始字符串字面值](https://golang.org/ref/spec#raw_strin
 
 可以跨越多行并包含引号。使用这些字符串可以避免更难阅读的手工转义的字符串。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 wantError := "unknown name:\"test\""
 ```
 
-</td><td>
+**Good**
 
 ```go
 wantError := `unknown error:"test"`
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 初始化结构体
 
@@ -2647,16 +2647,16 @@ wantError := `unknown error:"test"`
 
 [`go vet`]: https://golang.org/cmd/vet/
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 k := User{"John", "Doe", true}
 ```
 
-</td><td>
+**Good**
 
 ```go
 k := User{
@@ -2666,8 +2666,8 @@ k := User{
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 例外：当有 3 个或更少的字段时，测试表中的字段名*may*可以省略。
 
@@ -2685,10 +2685,10 @@ tests := []struct{
 初始化具有字段名的结构时，除非提供有意义的上下文，否则忽略值为零的字段。
 也就是，让我们自动将这些设置为零值
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 user := User{
@@ -2699,7 +2699,7 @@ user := User{
 }
 ```
 
-</td><td>
+**Good**
 
 ```go
 user := User{
@@ -2708,8 +2708,8 @@ user := User{
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 这有助于通过省略该上下文中的默认值来减少阅读的障碍。只指定有意义的值。
 
@@ -2728,23 +2728,23 @@ tests := []struct{
 
 如果在声明中省略了结构的所有字段，请使用 `var` 声明结构。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 user := User{}
 ```
 
-</td><td>
+**Good**
 
 ```go
 var user User
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 这将零值结构与那些具有类似于为 [初始化 Maps](#初始化-maps) 创建的，区别于非零值字段的结构区分开来，
 并与我们更喜欢的 [声明空切片] 方式相匹配。
@@ -2753,10 +2753,10 @@ var user User
 
 在初始化结构引用时，请使用`&T{}`代替`new(T)`，以使其与结构体初始化一致。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 sval := T{Name: "foo"}
@@ -2766,7 +2766,7 @@ sptr := new(T)
 sptr.Name = "bar"
 ```
 
-</td><td>
+**Good**
 
 ```go
 sval := T{Name: "foo"}
@@ -2774,18 +2774,18 @@ sval := T{Name: "foo"}
 sptr := &T{Name: "bar"}
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 初始化 Maps
 
 对于空 map 请使用 `make(..)` 初始化， 并且 map 是通过编程方式填充的。
 这使得 map 初始化在表现上不同于声明，并且它还可以方便地在 make 后添加大小提示。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 var (
@@ -2798,7 +2798,7 @@ var (
 
 声明和初始化看起来非常相似的。
 
-</td><td>
+**Good**
 
 ```go
 var (
@@ -2811,8 +2811,8 @@ var (
 
 声明和初始化看起来差别非常大。
 
-</td></tr>
-</tbody></table>
+
+
 
 在尽可能的情况下，请在初始化时提供 map 容量大小，详细请看 [指定 Map 容量提示](#指定Map容量提示)。
 
@@ -2820,10 +2820,10 @@ var (
 另外，如果 map 包含固定的元素列表，则使用 map literals(map 初始化列表) 初始化映射。
 
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 m := make(map[T1]T2, 3)
@@ -2832,7 +2832,7 @@ m[k2] = v2
 m[k3] = v3
 ```
 
-</td><td>
+**Good**
 
 ```go
 m := map[T1]T2{
@@ -2842,8 +2842,8 @@ m := map[T1]T2{
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 基本准则是：在初始化时使用 map 初始化列表 来添加一组固定的元素。否则使用 `make` (如果可以，请尽量指定 map 容量)。
 
@@ -2853,25 +2853,25 @@ m := map[T1]T2{
 
 这有助于`go vet`对格式字符串执行静态分析。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 msg := "unexpected values %v, %v\n"
 fmt.Printf(msg, 1, 2)
 ```
 
-</td><td>
+**Good**
 
 ```go
 const msg = "unexpected values %v, %v\n"
 fmt.Printf(msg, 1, 2)
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 ### 命名 Printf 样式的函数
 
@@ -2899,10 +2899,10 @@ $ go vet -printfuncs=wrapf,statusf
 
 [subtests]: https://blog.golang.org/subtests
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 // func TestSplitHostPort(t *testing.T)
@@ -2928,7 +2928,7 @@ assert.Equal(t, "1", host)
 assert.Equal(t, "8", port)
 ```
 
-</td><td>
+**Good**
 
 ```go
 // func TestSplitHostPort(t *testing.T)
@@ -2970,8 +2970,8 @@ for _, tt := range tests {
 }
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 很明显，使用 test table 的方式在代码逻辑扩展的时候，比如新增 test case，都会显得更加的清晰。
 
@@ -2997,10 +2997,10 @@ for _, tt := range tests {
 
 将此模式用于您需要扩展的构造函数和其他公共 API 中的可选参数，尤其是在这些功能上已经具有三个或更多参数的情况下。
 
-<table>
-<thead><tr><th>Bad</th><th>Good</th></tr></thead>
-<tbody>
-<tr><td>
+
+**Bad**
+
+
 
 ```go
 // package db
@@ -3023,7 +3023,7 @@ db.Open(addr, false /* cache */, zap.NewNop())
 db.Open(addr, false /* cache */, log)
 ```
 
-</td><td>
+**Good**
 
 ```go
 // package db
@@ -3062,8 +3062,8 @@ db.Open(
 )
 ```
 
-</td></tr>
-</tbody></table>
+
+
 
 我们建议实现此模式的方法是使用一个 `Option` 接口，该接口保存一个未导出的方法，在一个未导出的 `options` 结构上记录选项。
 
